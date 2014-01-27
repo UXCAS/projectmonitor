@@ -9,6 +9,6 @@ every 3.minutes do
   rake "projectmonitor:fetch_statuses", :output => "log/fetch_statuses.log"
 end
 
-every 1.minute do
-  rake "dependency:fetch_statuses"
-end
+#every 1.minute do
+#  rake "projectmonitor:fetch_statuses"
+#end
