@@ -9,6 +9,13 @@ describe "Project" do
       patch "/projects/validate_build_info", project: project.attributes.merge(auth_password: "password")
       expect(response.body).to match /Error parsing content for build name twitter-for-dogs/
     end
+
+    describe "when project is not present" do
+      it "returns 201" do
+        patch "/projects/validate_build_info"
+        expect(response.status).to eq(201)
+      end
+    end
   end
 
   describe "/validate_tracker_project" do

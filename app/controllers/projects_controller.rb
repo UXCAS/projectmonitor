@@ -71,22 +71,25 @@ class ProjectsController < ApplicationController
   end
 
   def validate_build_info
-    project = params[:project][:type].constantize.new(project_params)
+    if params[:project].present?
+      project = params[:project][:type].constantize.new(project_params)
 
-    if existing_project_missing_password?
-      existing_project = Project.find(params[:project][:id])
-      project.auth_password = existing_project.auth_password if existing_project
+      if existing_project_missing_password?
+        existing_project = Project.find(params[:project][:id])
+        project.auth_password = existing_project.auth_password if existing_project
+      end
+
+      status_updater = StatusUpdater.new
+      project_updater = ProjectUpdater.new(payload_processor: PayloadProcessor.new(project_status_updater: status_updater))
+      log_entry = project_updater.update(project)
+
+      render :json => {
+        status: log_entry.status == 'successful',
+        error_type: log_entry.error_type,
+        error_text: log_entry.error_text.to_s[0, 10000]
+      }
     end
-
-    status_updater = StatusUpdater.new
-    project_updater = ProjectUpdater.new(payload_processor: PayloadProcessor.new(project_status_updater: status_updater))
-    log_entry = project_updater.update(project)
-
-    render :json => {
-      status: log_entry.status == 'successful',
-      error_type: log_entry.error_type,
-      error_text: log_entry.error_text.to_s[0,10000]
-    }
+    head 201
   end
 
   def validate_tracker_project
